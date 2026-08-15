@@ -51,7 +51,17 @@ Streams [Lichess/chess-position-evaluations](https://huggingface.co/datasets/Lic
 python -m chess_llm.data.sample --out-dir data --min-depth 20 --sample-mod 1
 ```
 
-Writes `data/train.parquet` (2M), `val.parquet` (20k), `test.parquet` (20k), `rl.parquet` (50k).
+Writes `data/train.parquet` (2M), `val.parquet` (20k), `test.parquet` (20k), `rl.parquet` (50k). Those files stay on your machine; they are gitignored and are **not** part of this repository.
+
+### Data license (not legal advice)
+
+| Piece | License | What we do |
+|---|---|---|
+| [Lichess evaluations](https://database.lichess.org/#evals) / [`Lichess/chess-position-evaluations`](https://huggingface.co/datasets/Lichess/chess-position-evaluations) | **CC0 1.0** (public domain dedication). Lichess: use for research, commercial use, publication, redistribution, without asking. | Train locally. Do **not** commit or push parquet. |
+| [Stockfish](https://stockfishchess.org/) engine | **GPL-3.0** | Not shipped. Labels are Lichess’s CC0 eval dump, not a copy of the engine. |
+| Qwen3-4B-Instruct | Apache-2.0 (upstream card) | Base weights are downloaded by the trainer; this repo has none. |
+
+Training on CC0 evals and publishing **code** is what Lichess documents as allowed. Publishing a later LoRA still needs the Qwen license; this repo does not include adapters.
 
 ## Train
 
