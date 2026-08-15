@@ -1,14 +1,13 @@
 # chess-llm
-
-## Project goal
-
-This educational project tries to teach a open small language model to look at a chess position and choose a strong next move. It also explores how far a single consumer RTX 5060 Ti 16GB can realistically go when fine-tuning and running a 4-billion-parameter model locally.
-
-Fine-tune **Qwen3-4B** on Stockfish-labeled chess (QLoRA SFT, optional GRPO) and play it in a local UI.
+Train a chess-focused language model and play against it through a local UI.
 
 ![Chess LLM Matrix-style interface](web/example_UI.png)
 
-This repo is **code only**. Labels, adapters, and logs are gitignored — you generate data and train on your machine.
+## Project goal
+
+This educational project fine-tunes the open-weight Qwen3-4B model on Stockfish-labeled positions to predict strong legal moves from [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation). It explores what a single consumer RTX 5060 Ti 16GB can realistically achieve using 4-bit QLoRA, supervised fine-tuning, optional GRPO, and fully local inference.
+
+> **Note:** This repository contains code only. Datasets, trained adapters, checkpoints, and logs are generated locally and excluded from Git.
 
 ## Getting started
 
