@@ -6,7 +6,7 @@ Fine-tune **Qwen3-4B** on Stockfish-labeled chess (QLoRA SFT, optional GRPO) and
 
 ## Project goal
 
-This educational project tries to teach a small language model to look at a chess position and choose a strong next move. It also explores how far a single consumer RTX 5060 Ti 16GB can realistically go when fine-tuning and running a 4-billion-parameter model locally.
+This educational project tries to teach a open small language model to look at a chess position and choose a strong next move. It also explores how far a single consumer RTX 5060 Ti 16GB can realistically go when fine-tuning and running a 4-billion-parameter model locally.
 
 This repo is **code only**. Labels, adapters, and logs are gitignored — you generate data and train on your machine.
 
