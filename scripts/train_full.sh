@@ -9,18 +9,45 @@ OUT="${CHESS_OUTPUT:-$HOME/chess_outputs}"
 mkdir -p "$OUT"
 exec > >(tee -a "$OUT/train_full.log") 2>&1
 
-echo "=== SFT ==="
-python -m chess_llm.train.sft --config configs/sft.yaml --output-dir "$OUT/sft" --no-eval
+ADAPTER="${SFT_ADAPTER:-}"
+if [ -z "$ADAPTER" ]; then
+  for d in $(ls -d "$OUT/sft"/checkpoint-* 2>/dev/null | sort -t- -k2 -n); do
+    if [ -f "$d/adapter_model.safetensors" ]; then
+      ADAPTER="$d"
+    fi
+  done
+fi
+if [ -z "$ADAPTER" ] && [ -f "$OUT/sft/adapter_model.safetensors" ]; then
+  ADAPTER="$OUT/sft"
+fi
+
+if [ -f "$OUT/sft_done" ]; then
+  echo "=== skip SFT (found $OUT/sft_done); adapter=$ADAPTER ==="
+else
+  echo "=== SFT ==="
+  python -m chess_llm.train.sft --config configs/sft.yaml --output-dir "$OUT/sft" --no-eval
+  touch "$OUT/sft_done"
+  for d in $(ls -d "$OUT/sft"/checkpoint-* 2>/dev/null | sort -t- -k2 -n); do
+    if [ -f "$d/adapter_model.safetensors" ]; then
+      ADAPTER="$d"
+    fi
+  done
+fi
+
+if [ -z "$ADAPTER" ]; then
+  echo "no complete SFT adapter under $OUT/sft" >&2
+  exit 1
+fi
 
 echo "=== sync SFT adapters (playable now) ==="
 mkdir -p outputs
 rm -rf outputs/sft
-cp -a "$OUT/sft" outputs/sft
+cp -a "$ADAPTER" outputs/sft
 
-echo "=== GRPO ==="
+echo "=== GRPO (adapter=$ADAPTER) ==="
 python -m chess_llm.train.grpo --config configs/grpo.yaml \
   --max-samples 20000 --max-steps 1000 \
-  --adapter-path "$OUT/sft" --output-dir "$OUT/grpo"
+  --adapter-path "$ADAPTER" --output-dir "$OUT/grpo"
 
 echo "=== sync GRPO adapters ==="
 rm -rf outputs/grpo

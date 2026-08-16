@@ -103,6 +103,7 @@ python -m chess_llm.train.dpo --config configs/dpo.yaml
 ```
 
 Do **not** start two `train_full.sh` jobs at once (they will fight for the GPU). Windows: `scripts/watchdog.ps1` keeps the PC awake and resumes from the last **complete** checkpoint if a save hangs.
+
 **4. Play**
 
 ```bash
@@ -124,6 +125,39 @@ Open http://localhost:3000. Tests: `pytest`.
 | GPU load | ~**98%**, ~**155W** / 180W, ~**70°C** |
 
 A 16GB card is the intended size. Smaller VRAM: drop `per_device_train_batch_size` or `lora_r` in `configs/sft.yaml`.
+
+## Run results
+
+Logged from Unsloth/TRL on the 5060 Ti. 
+| Stage | What ran | Wall time | Output |
+|---|---|---|---|
+| **Data** | Stream Lichess evals → 2M/20k/20k/50k parquet | tens of minutes (one-time) | `data/*.parquet` |
+| **SFT** | QLoRA, **3500 / 4000** steps (stopped early), ~9 s/step | **~8.5–9 h** GPU | `checkpoint-3500`, loss **3.99 → 0.57** |
+| **GRPO** | 1000 / 1000 steps on that adapter, ~4–5 s/step | **~47 min**  | `outputs/grpo` (127MB LoRA) |
+| **Eval** | 2000 test FENs, generate + score | **~26 min**  | `outputs/eval.json` |
+
+**SFT (log):** first logged loss `3.99` (step 20) → last `0.572` (step 3500). Effective batch 32, seq 256, 4-bit, ~7–10GB VRAM, GPU ~98% / ~155W.
+
+**GRPO (log):** mean reward first 10 logs **0.46** → last 10 **0.60** (range ~0.18–1.18). Completions ~13 tokens. KL ~7.
+
+**Eval (`outputs/eval.json`):**
+
+```json
+{
+  "n": 2000,
+  "legal_rate": 0.7925,
+  "top1": 0.073,
+  "median_cp_error": 59.0
+}
+```
+
+| Metric | Value | Meaning |
+|---|---:|---|
+| legal_rate | 79.3% | parsed UCI was legal on the FEN |
+| top1 | 7.3% | exact Stockfish PV move |
+| median_cp_error | 59 | typical eval error (~0.6 pawn) |
+
+Useful GPU time after data was on the order of **~10 hours** (SFT 3500 + GRPO 1000 + eval). A full 26.7k-step SFT epoch was **not** run.
 
 ## Training recipe (what we actually run)
 
