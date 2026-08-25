@@ -55,6 +55,8 @@ export default function Home() {
     return game.moves({ square: selected, verbose: true }).map((m) => m.to);
   }, [game, selected]);
 
+  const moves = useMemo(() => sanList(game), [game]);
+
   const refreshLink = useCallback(async () => {
     const h = await fetchHealth();
     if (!h) {
@@ -173,8 +175,8 @@ export default function Home() {
         <aside className="panel">
           <h2>pgn stream</h2>
           <div className="moves">
-            {sanList(game).length === 0 && <div className="logline">{"// 1. ?"}</div>}
-            {sanList(game).map((line) => (
+            {moves.length === 0 && <div className="logline">{"// 1. ?"}</div>}
+            {moves.map((line) => (
               <div key={line}>
                 <span className="num">{line.split(" ")[0]}</span>
                 {line.slice(line.indexOf(" ") + 1)}
